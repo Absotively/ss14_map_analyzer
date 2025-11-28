@@ -87,6 +87,7 @@ if __name__ == '__main__':
     map_ids.sort()
     reordered_data = []
     reordered_data.append(['Map ID'] + map_ids)
+    reordered_data.append(['Tiles'] + [all_maps_data[x]['tile_count'] for x in map_ids])
 
     for density in densities:
         count_data = [ density ]
