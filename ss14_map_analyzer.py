@@ -5,23 +5,18 @@ import pathlib
 import sys
 import yaml
 
-# Entities for which to report the number per thousand tiles
-density_entities = ["StationMap"]
-
 # For each prefix, group entities with names beginning with that prefix together
 grouping_prefixes = ["SignDirectional"]
 
-# Groups for which to report the number per thousand tiles
-density_groups = ["SignDirectional"]
+# Entities and prefix groups for which to report the number per thousand tiles
+densities = ["StationMap", "SignDirectional"]
 
 yaml.add_multi_constructor(u'!type:', lambda loader, suffix, node: loader.construct_mapping(node))
 
 def analyze_map(mappath):
     map_info = {
       'tile_count': 0,
-      'entity_counts': {},
-      'entity_group_counts': dict.fromkeys(grouping_prefixes, 0),
-      'densities': {}
+      'counts': {}
     }
 
     with open(mappath, 'r') as mapfile:
@@ -48,19 +43,13 @@ def analyze_map(mappath):
           added = False
           for prefix in grouping_prefixes:
             if ent['proto'].startswith(prefix):
-              map_info['entity_group_counts'][prefix] += len(ent['entities'])
+              if prefix not in map_info['counts']:
+                map_info['counts'][prefix] = 0
+              map_info['counts'][prefix] += len(ent['entities'])
               added = True
               break
           if not added:
-            map_info['entity_counts'][ent['proto']] = len(ent['entities'])
-
-    for proto in density_entities:
-      if proto in map_info['entity_counts']:
-        map_info['densities'][proto + ' density'] = 1000 * map_info['entity_counts'][proto] / map_info['tile_count']
-
-    for proto in density_groups:
-      if proto in map_info['entity_group_counts']:
-        map_info['densities'][proto + ' density'] = 1000 * map_info['entity_group_counts'][proto] / map_info['tile_count']
+            map_info['counts'][ent['proto']] = len(ent['entities'])
 
     return map_info
 
@@ -74,11 +63,35 @@ if __name__ == '__main__':
         map_path_list = args.mappath.glob('*.yml')
     else:
         map_path_list = [args.mappath]
-    all_maps_data = []
+    all_maps_data = {}
+    counted_things = set()
     for map_path in map_path_list:
-        all_maps_data.append(analyze_map(map_path))
+        map_data = analyze_map(map_path)
+        all_maps_data[map_data['id']] = map_data
+        counted_things |= set(map_data['counts'].keys())
 
-    print(all_maps_data)
+    map_ids = list(all_maps_data.keys())
+    map_ids.sort()
+    reordered_data = []
+    reordered_data.append(['Map ID'] + map_ids)
+
+    for density in densities:
+        count_data = [ density ]
+        density_data = [ density + ' density']
+        for map_id in map_ids:
+            map_tiles = all_maps_data[map_id]['tile_count']
+            map_counts = all_maps_data[map_id]['counts']
+            if density in map_counts:
+                count_data.append(map_counts[density])
+                density_data.append(1000 * map_counts[density] / map_tiles)
+            else:
+                count_data.append(0)
+                density_data.append(0)
+        reordered_data.append(count_data)
+        reordered_data.append(density_data)
+
+    print(reordered_data)
+
     exit()
 
     writer = csv.DictWriter(sys.stdout, ['id', 'tile_count', 'maps', 'maps_density', 'directional_signs', 'directional_sign_density'])
