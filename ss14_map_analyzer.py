@@ -90,6 +90,8 @@ if __name__ == '__main__':
 
     for density in densities:
         count_data = [ density ]
+        if density in grouping_prefixes:
+            count_data[0] += '*'
         density_data = [ density + ' density']
         for map_id in map_ids:
             map_tiles = all_maps_data[map_id]['tile_count']
@@ -106,7 +108,7 @@ if __name__ == '__main__':
     for prefix in grouping_prefixes:
         if prefix in densities:
             continue
-        count_data = [ prefix ]
+        count_data = [ prefix + '*' ]
         for map_id in map_ids:
             if prefix in all_maps_data[map_id]['counts']:
                 count_data.append(all_maps_data[map_id]['counts'][prefix])
