@@ -6,10 +6,23 @@ import sys
 import yaml
 
 # For each prefix, group entities with names beginning with that prefix together
-grouping_prefixes = ["SignDirectional"]
+grouping_prefixes = [
+    "Airlock",
+    "Wall",
+    "WindowDirectional",
+    "Window",
+    "PosterLegit",
+    "PosterContraband",
+    "SignDirectional"
+]
 
 # Entities and prefix groups for which to report the number per thousand tiles
-densities = ["StationMap", "SignDirectional"]
+densities = [
+    "PosterLegit",
+    "PosterContraband",
+    "SignDirectional",
+    "StationMap"
+]
 
 yaml.add_multi_constructor(u'!type:', lambda loader, suffix, node: loader.construct_mapping(node))
 
@@ -90,11 +103,26 @@ if __name__ == '__main__':
         reordered_data.append(count_data)
         reordered_data.append(density_data)
 
-    print(reordered_data)
+    for prefix in grouping_prefixes:
+        if prefix in densities:
+            continue
+        count_data = [ prefix ]
+        for map_id in map_ids:
+            if prefix in all_maps_data[map_id]['counts']:
+                count_data.append(all_maps_data[map_id]['counts'][prefix])
+            else:
+                count_data.append(0)
+        reordered_data.append(count_data)
 
-    exit()
+    for counted_thing in sorted(counted_things ^ set(densities) ^ set(grouping_prefixes)):
+        count_data = [ counted_thing ]
+        for map_id in map_ids:
+            if counted_thing in all_maps_data[map_id]['counts']:
+                count_data.append(all_maps_data[map_id]['counts'][counted_thing])
+            else:
+                count_data.append(0)
+        reordered_data.append(count_data)
 
-    writer = csv.DictWriter(sys.stdout, ['id', 'tile_count', 'maps', 'maps_density', 'directional_signs', 'directional_sign_density'])
-    writer.writeheader()
-    for m in all_maps_data:
-        writer.writerow(m)
+    writer = csv.writer(sys.stdout)
+    for r in reordered_data:
+        writer.writerow(r)
