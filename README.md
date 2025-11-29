@@ -12,7 +12,8 @@ To run it, specify a map file or directory with map files as the first command l
 The output is CSV on stdout; you should generally redirect it to a file.
 
 Example:
-```python3 ss14_map_analyzer space-station-14/Resources/Maps > data.csv
+```
+python3 ss14_map_analyzer space-station-14/Resources/Maps > data.csv
 ```
 
 The output contains rows for the following, with a column for each map analyzed:
