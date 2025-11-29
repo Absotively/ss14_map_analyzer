@@ -28,4 +28,5 @@ The output contains rows for the following, with a column for each map analyzed:
 * Even in python, it could be much faster if I bothered to set up libyaml
 * As mentioned above, the configuration setup is kind of a mess
 * Honestly the output could be clearer too
+* Grouping entities by proto ID prefix is pretty limited
 
