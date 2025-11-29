@@ -97,11 +97,12 @@ if __name__ == '__main__':
         all_maps_data[map_data['id']] = map_data
         counted_things |= set(map_data['counts'].keys())
 
+    writer = csv.writer(sys.stdout)
+
     map_ids = list(all_maps_data.keys())
     map_ids.sort()
-    reordered_data = []
-    reordered_data.append(['Map ID'] + map_ids)
-    reordered_data.append(['Tiles'] + [all_maps_data[x]['tile_count'] for x in map_ids])
+    writer.writerow(['Map ID'] + map_ids)
+    writer.writerow(['Tiles'] + [all_maps_data[x]['tile_count'] for x in map_ids])
 
     for density in densities:
         count_data = [ density ]
@@ -117,8 +118,8 @@ if __name__ == '__main__':
             else:
                 count_data.append(0)
                 density_data.append(0)
-        reordered_data.append(count_data)
-        reordered_data.append(density_data)
+        writer.writerow(count_data)
+        writer.writerow(density_data)
 
     for prefix in grouping_prefixes:
         if prefix in densities:
@@ -129,7 +130,9 @@ if __name__ == '__main__':
                 count_data.append(all_maps_data[map_id]['counts'][prefix])
             else:
                 count_data.append(0)
-        reordered_data.append(count_data)
+        writer.writerow(count_data)
+
+    remaining_counts = []
 
     for counted_thing in sorted(counted_things ^ set(densities) ^ set(grouping_prefixes)):
         count_data = [ counted_thing ]
@@ -138,8 +141,9 @@ if __name__ == '__main__':
                 count_data.append(all_maps_data[map_id]['counts'][counted_thing])
             else:
                 count_data.append(0)
-        reordered_data.append(count_data)
+        remaining_counts.append(count_data)
 
-    writer = csv.writer(sys.stdout)
-    for r in reordered_data:
+    remaining_counts.sort(key = lambda x: x.count(0))
+
+    for r in remaining_counts:
         writer.writerow(r)
