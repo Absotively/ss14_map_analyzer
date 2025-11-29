@@ -114,7 +114,8 @@ if __name__ == '__main__':
             map_counts = all_maps_data[map_id]['counts']
             if density in map_counts:
                 count_data.append(map_counts[density])
-                density_data.append(1000 * map_counts[density] / map_tiles)
+                density_value = 1000 * map_counts[density] / map_tiles
+                density_data.append('{:.2f}'.format(density_value))
             else:
                 count_data.append(0)
                 density_data.append(0)
