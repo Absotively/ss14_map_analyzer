@@ -5,6 +5,15 @@ import pathlib
 import sys
 import yaml
 
+# Ignore these files
+# These maps are either weird or not in rotation
+ignored_files = [
+    "reach.yml",
+    "relic.yml",
+    "saltern.yml",
+    "centcomm.yml"
+]
+
 # For each prefix, group entities with names beginning with that prefix together
 grouping_prefixes = [
     "Airlock",
@@ -27,6 +36,9 @@ densities = [
 yaml.add_multi_constructor(u'!type:', lambda loader, suffix, node: loader.construct_mapping(node))
 
 def analyze_map(mappath):
+    if mappath.name in ignored_files:
+        return None
+
     map_info = {
       'tile_count': 0,
       'counts': {}
@@ -80,6 +92,8 @@ if __name__ == '__main__':
     counted_things = set()
     for map_path in map_path_list:
         map_data = analyze_map(map_path)
+        if map_data is None:
+            continue
         all_maps_data[map_data['id']] = map_data
         counted_things |= set(map_data['counts'].keys())
 
